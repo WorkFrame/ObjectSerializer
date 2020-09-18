@@ -1,0 +1,28 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 15
+VisualStudioVersion = 15.0.28010.2036
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ObjectSerializer", "ObjectSerializer\ObjectSerializer.csproj", "{DD5835ED-34B0-4BFC-8FE6-5F0786DD0FCF}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ObjectSerializerDemo", "ObjectSerializerDemo\ObjectSerializerDemo.csproj", "{F91195AE-6D80-482D-87D8-59984380C559}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{DD5835ED-34B0-4BFC-8FE6-5F0786DD0FCF}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{DD5835ED-34B0-4BFC-8FE6-5F0786DD0FCF}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{DD5835ED-34B0-4BFC-8FE6-5F0786DD0FCF}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{DD5835ED-34B0-4BFC-8FE6-5F0786DD0FCF}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F91195AE-6D80-482D-87D8-59984380C559}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F91195AE-6D80-482D-87D8-59984380C559}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F91195AE-6D80-482D-87D8-59984380C559}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F91195AE-6D80-482D-87D8-59984380C559}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal
