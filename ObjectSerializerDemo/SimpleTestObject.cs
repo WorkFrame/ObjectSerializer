@@ -1,15 +1,22 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.Runtime.Serialization;
 
-namespace NetEti.DemoApplications.ObjectSerializerDemo
+namespace NetEti.DemoApplications
 {
-  [Serializable()]
-  public class SimpleTestObject
-  {
-    public int Id { get; set; }
-    public string Name { get; set; }
-  }
+    /// <summary>
+    /// Einfaches ReturnObject für das Testen des ObjectSerializers.
+    /// </summary>
+    /// <remarks>
+    /// Autor: Erik Nagel, NetEti
+    ///
+    /// 16.03.2015 Erik Nagel: erstellt
+    /// </remarks>
+    [DataContract] // [Serializable()]
+    public class SimpleTestObject
+    {
+        [DataMember]
+        public int Id { get; set; }
+
+        [DataMember]
+        public string? Name { get; set; }
+    }
 }
