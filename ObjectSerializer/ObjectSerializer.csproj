@@ -11,6 +11,14 @@
     <Authors>Erik Nagel</Authors>
     <Description>Assembly für die Serialisierung von Objektinstanzen nach Base64</Description>
     <Copyright>Copyright: Copyright © $(Authors) 2015-2023</Copyright>
+    <PackageTags>NetEti Framework Serialization DataObject</PackageTags>
+    <AssemblyVersion>7.0.1.0</AssemblyVersion>
+    <FileVersion>7.0.1.0</FileVersion>
   </PropertyGroup>
+
+  <PropertyGroup>
+    <AssemblyRoot>$(ProjectDir)../../../ReadyBin/Assemblies</AssemblyRoot>
+  </PropertyGroup>
+  <Import Project="$(ProjectDir)../../AddOn/proj/*" Condition="exists('$(ProjectDir)../../AddOn/proj')" />
 
 </Project>

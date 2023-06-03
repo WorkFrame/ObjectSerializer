@@ -7,7 +7,6 @@ namespace NetEti.ObjectSerializer
     /// Bietet Unterstützung für die Serialisierung und De-Serialisierung von Objekten.
     /// </summary>
     /// <remarks>
-    /// File: XMLSerializationUtility.cs
     /// Autor: Erik Nagel
     ///
     /// 15.03.2015 Erik Nagel: erstellt
