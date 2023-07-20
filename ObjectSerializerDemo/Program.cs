@@ -6,47 +6,66 @@ namespace NetEti.DemoApplications
 	{
 		static void Main(string[] args)
 		{
-			SimpleTestObject simpleTestObject = new SimpleTestObject() { Id = 1, Name = "Harry" };
-			string encoded = SerializationUtility.SerializeObjectToUTF8(simpleTestObject);
-			Console.WriteLine("#" + encoded + "#");
-			object? obj = SerializationUtility.DeserializeObjectFromUTF8<SimpleTestObject>(encoded);
-            if (obj == null)
-            {
-                throw new InvalidOperationException("Die Deserialisierung von SimpleTestObject ist schiefgegangen!");
-            }
-            Console.WriteLine(String.Format("object - Type: {0}, Id: {1}, Name: {2}", obj.GetType().Name, ((SimpleTestObject)obj).Id, ((SimpleTestObject)obj).Name));
+            // List<byte> encodedByteList;
+            string encodedString;
+            object? obj;
 
-			ComplexTestObject complexTestObject = new ComplexTestObject() { Id = 1, Name = "Harry", SubObject = new TestSubObject() { SubId = 100, SubName = "Child" } };
-			encoded = SerializationUtility.SerializeObjectToBase64(complexTestObject);
-			Console.WriteLine("#" + encoded + "#");
-			obj = SerializationUtility.DeserializeObjectFromBase64<ComplexTestObject>(encoded);
+            ComplexTestObjectWithAnonymousElement complexTestObjectWithAnonymousElement = new ComplexTestObjectWithAnonymousElement()
+            {
+                Id = 1,
+                Name = "Harry",
+                SubObject = new TestSubObject() { SubId = 100, SubName = "Child in anonymous object" },
+                Comment = "Bla Bla",
+                SecondSubObject = new SecondTestSubObject() {
+                    SubId = 200,
+                    SubSubObject = new TestSubSubObject() { SubSubId = 1111, SubSubName = "Grandchild in Second child of anonymous object" },
+                    // SubSubObject = null,
+                    SubName = "Second child in anonymous object" }
+            };
+            // encodedByteList = SerializationUtility.SerializeObjectToByteList(complexTestObjectWithAnonymousElement);
+            // Console.WriteLine($"Anzahl serialisierter Bytes: {encodedByteList.Count}");
+            encodedString = SerializationUtility.SerializeObjectToBase64String(complexTestObjectWithAnonymousElement);
+            Console.WriteLine($"Anzahl serialisierter Bytes: {encodedString.Length}");
+            Console.WriteLine($"Base64-String: >{encodedString}<");
+            obj = SerializationUtility.DeserializeObjectFromBase64String(encodedString);
             if (obj == null)
             {
-                throw new InvalidOperationException("Die Deserialisierung von ComplexTestObject ist schiefgegangen!");
+                throw new InvalidOperationException(
+                    "Die Deserialisierung von complexTestObjectWithAnonymousElement ist schiefgegangen!");
             }
-            TestSubObject? testSubObject = ((ComplexTestObject)obj).SubObject;
-            if (testSubObject == null)
+            TestSubObject? anonymousSubObject = (TestSubObject?)((ComplexTestObjectWithAnonymousElement)obj).SubObject;
+            if (anonymousSubObject == null)
             {
-                throw new InvalidOperationException("Die Deserialisierung von ComplexTestObject ist schiefgegangen!");
+                throw new InvalidOperationException(
+                    "Die Deserialisierung von complexTestObjectWithAnonymousElement.SubObject ist schiefgegangen!");
             }
-            Console.WriteLine(String.Format("object - Type: {0}, Id: {1}, Name: {2}\n\tSubObject.SubId: {3}, SubObject.SubName: {4}",
-				obj.GetType().Name, ((ComplexTestObject)obj).Id, ((ComplexTestObject)obj).Name, testSubObject.SubId, testSubObject.SubName));
-			encoded = SerializationUtility.SerializeObjectToUTF8(complexTestObject);
-			Console.WriteLine("#" + encoded + "#");
-			obj = SerializationUtility.DeserializeObjectFromUTF8<ComplexTestObject>(encoded);
-            if (obj == null)
+            SecondTestSubObject? SecondAnonymousSubObject
+                = (SecondTestSubObject?)((ComplexTestObjectWithAnonymousElement)obj).SecondSubObject;
+            if (SecondAnonymousSubObject == null)
             {
-                throw new InvalidOperationException("Die Deserialisierung von ComplexTestObject ist schiefgegangen!");
+                throw new InvalidOperationException(
+                    "Die Deserialisierung von complexTestObjectWithAnonymousElement.SecondSubObject ist schiefgegangen!");
             }
-            testSubObject = ((ComplexTestObject)obj).SubObject;
-            if (testSubObject == null)
+            TestSubSubObject? AnonymousSubSubObject
+                = (TestSubSubObject?)((SecondTestSubObject?)((ComplexTestObjectWithAnonymousElement)obj).SecondSubObject)?.SubSubObject;
+            if (AnonymousSubSubObject == null)
             {
-                throw new InvalidOperationException("Die Deserialisierung von ComplexTestObject ist schiefgegangen!");
+                throw new InvalidOperationException(
+                    "Die Deserialisierung von complexTestObjectWithAnonymousElement.SecondSubObject.SubSubObject ist schiefgegangen!");
             }
-            Console.WriteLine(String.Format("object - Type: {0}, Id: {1}, Name: {2}\n\tSubObject.SubId: {3}, SubObject.SubName: {4}",
-			obj.GetType().Name, ((ComplexTestObject)obj).Id, ((ComplexTestObject)obj).Name, testSubObject.SubId, testSubObject.SubName));
+            Console.WriteLine(String.Format("object - Type: {0}, Id: {1}, Name: {2}, Comment: {3}",
+                obj.GetType().Name, ((ComplexTestObjectWithAnonymousElement)obj).Id, ((ComplexTestObjectWithAnonymousElement)obj).Name,
+                ((ComplexTestObjectWithAnonymousElement)obj).Comment));
+            Console.WriteLine(String.Format("\tSubObject.SubId: {0}, SubObject.SubName: {1}",
+                anonymousSubObject.SubId, anonymousSubObject.SubName));
+            Console.WriteLine(String.Format("\tSecondSubObject.SubId: {0}, SecondSubObject.SubName: {1}",
+                SecondAnonymousSubObject.SubId, SecondAnonymousSubObject.SubName));
+            Console.WriteLine(String.Format("\t\tSecondSubObject.SubSubObject.SubId: {0}, SecondSubObject.SubSubObject.SubName: {1}",
+                AnonymousSubSubObject.SubSubId, AnonymousSubSubObject.SubSubName));
 
-			Console.ReadLine();
+            //-----------------------------------------------------------------------------------------------------------
+
+            Console.ReadLine();
 		}
 	}
 }

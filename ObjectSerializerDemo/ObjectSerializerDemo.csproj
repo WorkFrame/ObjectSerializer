@@ -13,9 +13,14 @@
     <Company>NetEti</Company>
     <Description>$(AssemblyName) - Demoprogramm</Description>
     <Copyright>Copyright © $(Authors) 2015-2023</Copyright>
-    <AssemblyVersion>7.0.1.0</AssemblyVersion>
-    <FileVersion>7.0.1.0</FileVersion>
+    <AssemblyVersion>7.0.1.1</AssemblyVersion>
+    <FileVersion>7.0.1.1</FileVersion>
   </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Remove="SecondSimpleTestObject.cs" />
+    <Compile Remove="SimpleTestObject.cs" />
+  </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\ObjectSerializer\ObjectSerializer.csproj" />
