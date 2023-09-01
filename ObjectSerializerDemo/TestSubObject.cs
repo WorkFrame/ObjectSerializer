@@ -11,5 +11,10 @@ namespace NetEti.DemoApplications
 
         [DataMember()]
         public string? SubName { get; set; }
+
+        public override string ToString()
+        {
+            return String.Format($"TestSubObject: SubId={SubId.ToString()}, SubName={SubName}");
+        }
     }
 }

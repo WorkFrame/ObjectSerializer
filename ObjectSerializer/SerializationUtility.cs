@@ -29,6 +29,7 @@ namespace NetEti.ObjectSerializer
     ///            See https://aka.ms/binaryformatter for more information."
     ///            Thanks to Brian Sullivan and Dzyann for their help on de-serializing Types:
     ///            https://stackoverflow.com/questions/12306/can-i-serialize-a-c-sharp-type-object
+    /// 31.08.2023 Erik Nagel: Neuen Schalter anonymousToString implementiert.
     /// </remarks>
     public class SerializationUtility
     {
@@ -40,11 +41,13 @@ namespace NetEti.ObjectSerializer
         /// Serialisiert ein Objekt in einen String mit einem gegebenen Encoding.
         /// </summary>
         /// <param name="obj">Das zu serialisierende Objekt.</param>
+        /// <param name="anonymousToString">Bei True werden enthaltene anonyme Datenobjekte
+        /// nur als Strings verschlüsselt; Default: false.</param>
         /// <returns>Das Objekt als verschlüsselter String.</returns>
-        public static string SerializeObjectToBase64String(object obj)
+        public static string SerializeObjectToBase64String(object obj, bool anonymousToString = false)
         {
             string? result = null;
-            byte[] serialized = SerializeObjectToByteList(obj).ToArray();
+            byte[] serialized = SerializeObjectToByteList(obj, anonymousToString).ToArray();
             if (serialized != null)
             {
                 result = ByteArrayToBase64String(serialized);
@@ -84,8 +87,10 @@ namespace NetEti.ObjectSerializer
         /// </summary>
         /// <param name="encoding">Verschlüsselungstyp (System.Text.Encoding).</param>
         /// <param name="obj">Das zu serialisierende Objekt.</param>
+        /// <param name="anonymousToString">Bei True werden enthaltene anonyme Datenobjekte
+        /// nur als Strings verschlüsselt; Default: false.</param>
         /// <returns>Das Objekt als verschlüsselter String.</returns>
-        public static string SerializeObjectToCodedString(Encoding encoding, object obj)
+        public static string SerializeObjectToCodedString(Encoding encoding, object obj, bool anonymousToString = false)
         {
             byte[] serialized = SerializeObjectToByteList(obj).ToArray();
             if (serialized != null)
@@ -126,10 +131,17 @@ namespace NetEti.ObjectSerializer
         /// Serialisiert ein Objekt in eine Byte-Liste.
         /// </summary>
         /// <param name="obj">Das zu serialisierende Objekt.</param>
+        /// <param name="anonymousToString">Bei True werden enthaltene anonyme Datenobjekte
+        /// nur als Strings verschlüsselt; Default: false.</param>
+        /// <param name="reku">Nur für internen Gebrauch.</param>
         /// <returns>Byte-Liste mit den bytes des Objekts.</returns>
-        public static List<byte> SerializeObjectToByteList(object obj)
+        public static List<byte> SerializeObjectToByteList(object obj, bool anonymousToString = false, int reku = 0)
         {
             List<byte> rtn = new();
+            if (anonymousToString && reku++ > 0)
+            {
+                obj = obj.ToString() ?? String.Empty;
+            }
             Type type = obj.GetType();
             TypeInfo typeInfo = type.GetTypeInfo();
             using (MemoryStream memoryStream = new MemoryStream())
@@ -150,7 +162,7 @@ namespace NetEti.ObjectSerializer
                         object? innerObject = property.GetValue(obj);
                         if (innerObject != null)
                         {
-                            List<byte> innerObjectBytes = SerializeObjectToByteList(innerObject);
+                            List<byte> innerObjectBytes = SerializeObjectToByteList(innerObject, anonymousToString, reku);
                             innerObjectByteLists.Add(innerObjectBytes);
                             Console.WriteLine(String.Format("{0}", innerObjectBytes));
                         }
