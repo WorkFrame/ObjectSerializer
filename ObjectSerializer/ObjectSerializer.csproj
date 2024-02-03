@@ -10,7 +10,7 @@
     <Title>$(AssemblyName) - serialisiert Objekte nach Base64</Title>
     <Authors>Erik Nagel</Authors>
     <Description>Assembly für die Serialisierung von Objektinstanzen nach Base64</Description>
-    <Copyright>Copyright: Copyright © $(Authors) 2015-2023</Copyright>
+    <Copyright>Copyright: Copyright © $(Authors) 2015-$([System.DateTime]::Now.Year)</Copyright>
     <PackageTags>NetEti Framework Serialization DataObject</PackageTags>
     <AssemblyVersion>8.0.0.0</AssemblyVersion>
     <FileVersion>8.0.0.0</FileVersion>
