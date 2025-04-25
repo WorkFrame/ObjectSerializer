@@ -1,6 +1,9 @@
 ﻿using System.Reflection;
 using System.Runtime.Serialization;
 using System.Text;
+using System.Text.Json.Serialization;
+using System.Text.Json;
+using System.Xml.Serialization;
 
 namespace NetEti.ObjectSerializer
 {
@@ -30,12 +33,11 @@ namespace NetEti.ObjectSerializer
     ///            Thanks to Brian Sullivan and Dzyann for their help on de-serializing Types:
     ///            https://stackoverflow.com/questions/12306/can-i-serialize-a-c-sharp-type-object
     /// 31.08.2023 Erik Nagel: Neuen Schalter anonymousToString implementiert.
+    /// 25.04.2025 Erik Nagel: Neue Routinen für Json und Xml hinzugefügt; Klasse statisch gemacht.
     /// </remarks>
-    public class SerializationUtility
+    public static class SerializationUtility
     {
-        #region public members
-
-        #region Object Base64 string Serialization
+        #region Base64
 
         /// <summary>
         /// Serialisiert ein Objekt in einen String mit einem gegebenen Encoding.
@@ -78,9 +80,9 @@ namespace NetEti.ObjectSerializer
             }
         }
 
-        #endregion Object Base64 string Serialization
+        #endregion Base64
 
-        #region Object encoded string Serialization
+        #region Encoded String
 
         /// <summary>
         /// Serialisiert ein Objekt in einen String mit einem gegebenen Encoding.
@@ -123,9 +125,9 @@ namespace NetEti.ObjectSerializer
             }
         }
 
-        #endregion Object encoded string Serialization
+        #endregion Encoded String
 
-        #region Object ByteList Serialization
+        #region ByteList
 
         /// <summary>
         /// Serialisiert ein Objekt in eine Byte-Liste.
@@ -253,11 +255,226 @@ namespace NetEti.ObjectSerializer
             return returnObject;
         }
 
-        #endregion Object ByteList Serialization
+        #endregion ByteList
 
-        #endregion public members
+        #region JsonOrXml
 
-        #region private members
+        /// <summary>
+        /// Überträgt einen String, der ein Json- oder Xml-Objekt
+        /// repräsentiert in das entsprechende Objekt.
+        /// </summary>
+        /// <param name="jsonOrXml">Ein String, der ein Json- oder Xml-Objekt repräsentiert.</param>
+        /// <returns>Eine gefüllte Objekt-Instanz vom Typ T.</returns>
+        /// <exception cref="ArgumentException">Wird geworfen, wenn der String 'jsonOrXml' kein gültiges unterstütztes Format hat.</exception>
+        public static T? DeserializeFromJsonOrXml<T>(string jsonOrXml)
+        {
+            T? obj = default(T);
+            if (jsonOrXml.Trim().StartsWith('{') || jsonOrXml.Trim().StartsWith('['))
+            {
+                obj =
+                    DeserializeFromJson<T>(jsonOrXml);
+            }
+            else
+            {
+                if (jsonOrXml.Trim().StartsWith('<'))
+                {
+                    obj =
+                        DeserializeFromXml<T>(jsonOrXml);
+                }
+                else
+                {
+                    throw new ArgumentException(
+                        "Der Parameter 'jsonOrXml' hat kein bekanntes Format. Unterstützt werden Xml und Json.");
+                }
+            }
+            return obj;
+        }
+
+        #endregion JsonOrXml
+
+        #region Json
+
+        /// <summary>
+        /// Serialisiert eine Objekt in ein Json-Format.
+        /// </summary>
+        /// <param name="obj">Zu serialisierendes Objekt.</param>
+        /// <param name="includeFields">Bei true werden auch öffentliche Felder ohne Getter und Setter serielisiert; Default: false.</param>
+        /// <returns>String mit dem serialisierten Objekt.</returns>
+        /// <exception cref="Exception">Mögliche Fehler bei der Serialisierung des Objekts.</exception>
+        public static string SerializeToJson<T>(T obj, bool includeFields = false)
+        {
+            try
+            {
+                var options = new JsonSerializerOptions
+                {
+                    ReferenceHandler = ReferenceHandler.Preserve,
+                    WriteIndented = true,
+                    IncludeFields = includeFields,
+                    DefaultIgnoreCondition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull
+                };
+                return JsonSerializer.Serialize<T>(obj, options);
+            }
+            catch (Exception ex)
+            {
+                throw new Exception($"Fehler beim Serialisieren von {typeof(T)} zu JSON", ex);
+            }
+        }
+
+        /// <summary>
+        /// Deserialisiert eine Objekt aus einem Json-Format.
+        /// </summary>
+        /// <param name="json">Json-String mit einem serialisierten Objekt.</param>
+        /// <returns>Aus einem Json-String deserialisiertes Objekt oder null.</returns>
+        /// <exception cref="Exception">Mögliche Fehler bei der Deserialisierung des Objekts.</exception>
+        public static T? DeserializeFromJson<T>(string json)
+        {
+            try
+            {
+                var options = new JsonSerializerOptions
+                {
+                    PropertyNameCaseInsensitive = true,
+                    PropertyNamingPolicy = JsonNamingPolicy.CamelCase
+                };
+                return JsonSerializer.Deserialize<T>(json, options);
+            }
+            catch (Exception ex)
+            {
+                throw new Exception($"Fehler beim Deserialisieren von JSON zu {typeof(T)}", ex);
+            }
+        }
+
+        /// <summary>
+        /// Lädt ein Objekt aus einer Json-Datei.
+        /// </summary>
+        /// <param name="filePath">Pfad zur Json-Datei.</param>
+        /// <returns>Aus einer Json-Datei geladenes Objekt.</returns>
+        /// <exception cref="Exception">Mögliche Fehler beim Laden des Objekts aus einer Json-Datei.</exception>
+        public static T? LoadFromJsonFile<T>(string filePath)
+        {
+            try
+            {
+                string jsonString = File.ReadAllText(filePath);
+                return DeserializeFromJson<T>(jsonString);
+            }
+            catch (Exception ex)
+            {
+                throw new Exception($"Error loading Object from JSON file: {filePath}", ex);
+            }
+        }
+
+        /// <summary>
+        /// Speichert ein Objekt in eine Json-Datei.
+        /// </summary>
+        /// <param name="obj">Zu speicherndes Objekt.</param>
+        /// <param name="filePath">Pfad zur Json-Datei.</param>
+    	/// <param name="includeFields">Bei true werden auch öffentliche Felder ohne Getter und Setter serielisiert; Default: false.</param>
+        /// <exception cref="Exception">Mögliche Fehler beim Speichern des Objekts.</exception>
+    	public static void SaveToJsonFile<T>(T obj, string filePath, bool includeFields = false)
+        {
+            try
+            {
+                string jsonString = SerializeToJson<T>(obj, includeFields);
+                File.WriteAllText(filePath, jsonString);
+            }
+            catch (Exception ex)
+            {
+                throw new Exception($"Error saving Objekt to JSON file: {filePath}", ex);
+            }
+        }
+
+        #endregion Json
+
+        #region Xml
+
+        /// <summary>
+        /// Serialisiert ein Objekt in ein XML-Format.
+        /// </summary>
+        /// <param name="obj">Zu serialisierendes Objekt.</param>
+        /// <returns>String mit dem serialisierten Objekt.</returns>
+        /// <exception cref="Exception">Mögliche Fehler bei der Serialisierung des Objekts.</exception>
+        public static string SerializeToXml<T>(T obj)
+        {
+            try
+            {
+                XmlSerializer serializer = new XmlSerializer(typeof(T));
+                using (StringWriter writer = new StringWriter())
+                {
+                    serializer.Serialize(writer, obj);
+                    return writer.ToString();
+                }
+            }
+            catch (Exception ex)
+            {
+                throw new Exception($"Fehler beim Serialisieren von {typeof(T)} zu XML", ex);
+            }
+        }
+
+        /// <summary>
+        /// Deserialisiert ein Objekt aus einem XML-Format.
+        /// </summary>
+        /// <param name="xml">Xml-String mit einem serialisierten Objekt.</param>
+        /// <returns>Aus einem Xml-String deserialisiertes Objekt oder null.</returns>
+        /// <exception cref="Exception">Mögliche Fehler bei der Deserialisierung des Objekts.</exception>
+        public static T? DeserializeFromXml<T>(string xml)
+        {
+            try
+            {
+                XmlSerializer serializer = new XmlSerializer(typeof(T));
+                using (StringReader reader = new StringReader(xml))
+                {
+                    return (T?)serializer.Deserialize(reader);
+                }
+            }
+            catch (Exception ex)
+            {
+                throw new Exception($"Fehler beim Deserialisieren von XML zu {typeof(T)}", ex);
+            }
+        }
+
+        /// <summary>
+        /// Lädt ein Objekt aus einer XML-Datei.
+        /// </summary>
+        /// <param name="filePath">Pfad zur Xml-Datei.</param>
+        /// <returns>Aus einer Xml-Datei geladenes Objekt.</returns>
+        /// <exception cref="Exception">Mögliche Fehler beim Laden des Objekts aus einer Xml-Datei.</exception>
+        public static T? LoadFromXmlFile<T>(string filePath)
+        {
+            try
+            {
+                XmlSerializer serializer = new XmlSerializer(typeof(T));
+                using (FileStream fileStream = new FileStream(filePath, FileMode.Open))
+                {
+                    return (T?)serializer.Deserialize(fileStream);
+                }
+            }
+            catch (Exception ex)
+            {
+                throw new Exception($"Error loading Object from XML file: {filePath}", ex);
+            }
+        }
+
+        /// <summary>
+        /// Speichert ein Objekt in eine Xml-Datei.
+        /// </summary>
+        /// <param name="obj">Zu speicherndes Objekt.</param>
+        /// <param name="filePath">Pfad zur Xml-Datei.</param>
+        /// <exception cref="Exception">Mögliche Fehler beim Speichern des Objekts.</exception>
+        public static void SaveToXmlFile<T>(T obj, string filePath)
+        {
+            try
+            {
+                string xmlString = SerializeToXml<T>(obj);
+                File.WriteAllText(filePath, xmlString);
+            }
+            catch (Exception ex)
+            {
+                throw new Exception($"Error saving Object to Xml file: {filePath}", ex);
+            }
+        }
+
+        #endregion Xml
+
+        #region private helpers
 
         /*
         /// <summary>
@@ -414,6 +631,6 @@ namespace NetEti.ObjectSerializer
             return type;
         }
 
-        #endregion private members
+        #endregion private helpers
     }
 }
