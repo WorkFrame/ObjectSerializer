@@ -264,9 +264,10 @@ namespace NetEti.ObjectSerializer
         /// repräsentiert in das entsprechende Objekt.
         /// </summary>
         /// <param name="jsonOrXml">Ein String, der ein Json- oder Xml-Objekt repräsentiert.</param>
+        /// <param name="noException">Bei true wird im Fehlerfall keine Exception erzeugt; Default: false.</param>
         /// <returns>Eine gefüllte Objekt-Instanz vom Typ T.</returns>
         /// <exception cref="ArgumentException">Wird geworfen, wenn der String 'jsonOrXml' kein gültiges unterstütztes Format hat.</exception>
-        public static T? DeserializeFromJsonOrXml<T>(string jsonOrXml)
+        public static T? DeserializeFromJsonOrXml<T>(string jsonOrXml, bool noException = false)
         {
             T? obj = default(T);
             if (jsonOrXml.Trim().StartsWith('{') || jsonOrXml.Trim().StartsWith('['))
@@ -283,8 +284,11 @@ namespace NetEti.ObjectSerializer
                 }
                 else
                 {
-                    throw new ArgumentException(
-                        "Der Parameter 'jsonOrXml' hat kein bekanntes Format. Unterstützt werden Xml und Json.");
+                    if (!noException)
+                    {
+                        throw new ArgumentException(
+                            "Der Parameter 'jsonOrXml' hat kein bekanntes Format. Unterstützt werden Xml und Json.");
+                    }
                 }
             }
             return obj;
